@@ -27,15 +27,16 @@ jobs:
           
       - name: 检查文件是否存在
         run: |
-          ls -l # 列出根目录文件，确认CSV/脚本存在
+          ls -l # 列出根目录文件
           
-      - name: 运行脚本生成HTML
+      - name: 运行脚本生成index.html
         run: python generate_html.py
         continue-on-error: false
       
-      - name: 检查HTML是否生成
+      - name: 确认index.html生成
         run: |
-          ls -l # 确认生成了「政府采购在线表格.html」
+          ls -l index.html # 验证文件存在
+          cat index.html | head -20 # 输出前20行，确认内容
       
       - name: 部署到gh-pages分支
         uses: peaceiris/actions-gh-pages@v4
@@ -45,3 +46,4 @@ jobs:
           publish_branch: gh-pages
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Auto update index.html: ${{ github.event.head_commit.message }}'
