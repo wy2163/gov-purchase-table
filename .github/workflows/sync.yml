@@ -1,0 +1,40 @@
+# 工作流名称（可自定义）
+name: 双表格自动同步+生成HTML
+# 触发条件：1.每10分钟运行 2.手动上传文件到main分支时触发
+on:
+  schedule:
+    - cron: "*/10 * * * *"  # 每10分钟执行一次（免费版足够用）
+  push:
+    branches: [ main ]  # 上传文件到main分支时立即触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest  # GitHub免费提供的Ubuntu服务器
+    steps:
+      # 步骤1：拉取仓库中的CSV和脚本到服务器
+      - name: 拉取仓库代码
+        uses: actions/checkout@v4
+
+      # 步骤2：配置Python环境（用于运行脚本处理CSV）
+      - name: 安装Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # 步骤3：安装依赖（pandas用于处理CSV数据）
+      - name: 安装pandas依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas  # 仅需安装pandas，脚本已适配双表格
+
+      # 步骤4：运行脚本，生成包含两个表格的HTML
+      - name: 运行脚本生成HTML
+        run: python generate_html.py
+
+      # 步骤5：部署HTML到GitHub Pages（让别人能访问）
+      - name: 部署到GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # GitHub自动生成的令牌，无需手动配置
+          publish_dir: ./  # 部署根目录的index.html
+          publish_branch: gh-pages  # 部署到gh-pages分支（GitHub Pages默认读取此分支）
